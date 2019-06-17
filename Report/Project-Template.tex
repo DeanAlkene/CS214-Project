@@ -30,10 +30,15 @@
 
 
 
-\title{The Title of Your Project}
-\subtitle{The Sub-Title of Your Project \vspace{-3mm}}
+\title{Package Delivery on ``Double 11'' Day}
+\subtitle{Project for Algorithm and Complexity \vspace{-3mm}}
 
-\author{Author1 (ID, email), Author2 (ID, email), Author3 (ID, email)}
+\author{
+Kylin Chen (517030910155, k1017856853@icloud.com) \\
+Fangyu Ding (517030910235, arthur\_99@sjtu.edu.cn) \\
+Hongzhou Liu (517030910214, deanlhz@sjtu.edu.cn)
+  }
+
 \institute{Department of Computer Science, \\ Shanghai Jiao Tong University, Shanghai, China}
 
 \begin{document}
@@ -53,12 +58,51 @@ Thus, we came up with some approximations to get good feasible solutions, applie
 \textbf{Keywords:} Package Delivery, Network Flow, Routing, Flow over time.
 \end{abstract}
 
-\section{Problem Formulation}
-We can define variables as follows:
+\section{Symbol Table}
+Define all the symbols that will be used later.
+\begin{table}
+\caption{Symbol Table}\label{sym}
+\centering
+\begin{tabular}{|l|l|}
+\hline
+Symbol &  Attribute \\
+\hline
+$city$ & $index$, $kind(large/small/hub)$, $capacity$\\
+\hline
+$tool$ & $departure\_city$, $arrival\_city$, $time$, $average\_delay$, $departure\_time$, $unit\_cost$ \\
+\hline
+$commodity$ & $index$, $unit\_weight$ \\
+\hline
+$order$ & $seller\_city$, $purchaser\_city$, $order\_time$, $commodity\_index$, $amount$, $emergency$ \\
+\hline
+\end{tabular}
+\end{table}
 
-\section{Theoretical Analysis}
-\section{Algorithm Design}
-\section{Performance Evaluation}
+\section{Problem 1}
+\subsection{Problem Analysis}
+In this part SF Express has its substations on all 656 cities covered in the orders. We came up with a network model. Regard $city$ as vertex and $tool$ as edge, 
+we can construct a network and simulate the transportation of orders on it. Our cost function is defined as $$cost$$
+\subsection{Algorithm Design}
+\subsection{Theoretical Analysis}
+\subsection{Performance Evaluation}
+
+\section{Problem 2}
+\subsection{Problem Analysis}
+\subsection{Algorithm Design}
+\subsection{Theoretical Analysis}
+\subsection{Performance Evaluation}
+
+\section{Problem 3}
+\subsection{Problem Analysis}
+\subsection{Algorithm Design}
+\subsection{Theoretical Analysis}
+\subsection{Performance Evaluation}
+
+\section{Problem 4}
+\subsection{Problem Analysis}
+\subsection{Algorithm Design}
+\subsection{Theoretical Analysis}
+\subsection{Performance Evaluation}
 
 \section{First Section}
 \subsection{A Subsection Sample}
