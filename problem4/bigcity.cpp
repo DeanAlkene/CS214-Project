@@ -59,7 +59,15 @@ main()
         emergency = atoi(field.c_str());
 
         // deal with an order
-        auto OPT = opt(G, seller_city, buyer_city, order_time, 4);
+        auto OPT = opt(big_cities,
+                       G_only_big,
+                       G_others,
+                       seller_city,
+                       buyer_city,
+                       order_time,
+                       4,
+                       4,
+                       4);
 
         opt_size << OPT.size() << endl;
         sol_cost << cost_val(OPT) << endl;

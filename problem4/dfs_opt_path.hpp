@@ -14,7 +14,8 @@ double
 val(double order_time, vector<edge>& path);
 
 void
-opt(MultiDiGraph& G_only_big,
+opt(set<int> big_cities,
+    MultiDiGraph& G_only_big,
     MultiDiGraph& G_others,
     int dep_city,
     int arr_city,
@@ -24,22 +25,28 @@ opt(MultiDiGraph& G_only_big,
     vector<edge>& path,
     double& MIN,
     vector<edge>& OPT,
-    int depth_limit);
+    int depth_limit_search_for_big,
+    int depth_limit_among_big,
+    int depth_limit_leave_from_big);
 
 vector<edge>
-opt(MultiDiGraph& G_only_big,
+opt(set<int> big_cities,
+    MultiDiGraph& G_only_big,
     MultiDiGraph& G_others,
     int dep_city,
     int arr_city,
     double order_time,
-    int depth_limit)
+    int depth_limit_search_for_big,
+    int depth_limit_among_big,
+    int depth_limit_leave_from_big)
 {
     bool vis[657] = { 0 };
     vector<edge> path;
     double MIN = 999999999;
     vector<edge> OPT;
 
-    opt(G_only_big,
+    opt(big_cities,
+        G_only_big,
         G_others,
         dep_city,
         arr_city,
@@ -49,7 +56,9 @@ opt(MultiDiGraph& G_only_big,
         path,
         MIN,
         OPT,
-        depth_limit);
+        depth_limit_search_for_big,
+        depth_limit_among_big,
+        depth_limit_leave_from_big);
 
     return OPT;
 }
@@ -82,7 +91,8 @@ val(double order_time, vector<edge>& path)
 }
 
 void
-opt(MultiDiGraph& G_only_big,
+opt(set<int> big_cities,
+    MultiDiGraph& G_only_big,
     MultiDiGraph& G_others,
     int dep_city,
     int arr_city,
@@ -92,7 +102,9 @@ opt(MultiDiGraph& G_only_big,
     vector<edge>& path,
     double& MIN,
     vector<edge>& OPT,
-    int depth_limit)
+    int depth_limit_search_for_big,
+    int depth_limit_among_big,
+    int depth_limit_leave_from_big)
 {
     if (dep_city == arr_city) {
         // find OPT
@@ -103,32 +115,104 @@ opt(MultiDiGraph& G_only_big,
         }
         return;
     }
-    if (depth_limit == 0)
+    if (depth_limit_search_for_big == 0)
+        return;
+    if (depth_limit_among_big == 0)
+        return;
+    if (depth_limit_leave_from_big == 0)
         return;
 
-    vis[dep_city] = true;
-    for (auto& kv : G[dep_city]) {
-        int target_city = kv.first;
-        auto& e = kv.second;
+    // dfs
+    if (big_cities.find(dep_city) == big_cities.end()) {
+        vis[dep_city] = true;
+        for (auto& kv : G_others[dep_city]) {
+            int target_city = kv.first;
+            auto& e = kv.second;
 
-        // dfs
-        if (vis[target_city] == false && e.dep_time >= arr_time) {
-            vis[target_city] = true;
-            path.push_back(e);
-            if (val(order_time, path) < MIN)
-                opt(G,
-                    target_city,
-                    arr_city,
-                    order_time,
-                    e.arr_time,
-                    vis,
-                    path,
-                    MIN,
-                    OPT,
-                    depth_limit - 1);
+            if (vis[target_city] == false && e.dep_time >= arr_time) {
+                vis[target_city] = true;
+                path.push_back(e);
+                if (val(order_time, path) < MIN)
+                    opt(big_cities,
+                        G_only_big,
+                        G_others,
+                        target_city,
+                        arr_city,
+                        order_time,
+                        e.arr_time,
+                        vis,
+                        path,
+                        MIN,
+                        OPT,
+                        depth_limit_search_for_big - 1,
+                        depth_limit_among_big,
+                        depth_limit_leave_from_big);
 
-            path.pop_back();
-            vis[target_city] = false;
+                path.pop_back();
+                vis[target_city] = false;
+            }
+        }
+    }
+    // has been in big cities
+    else {
+        // directly go to the destination
+        for (auto& kv : G_others[dep_city]) {
+            int target_city = kv.first;
+            auto& e = kv.second;
+
+            if (vis[target_city] == false && e.dep_time >= arr_time) {
+                vis[target_city] = true;
+                path.push_back(e);
+                if (val(order_time, path) < MIN)
+                    opt(big_cities,
+                        G_only_big,
+                        G_others,
+                        target_city,
+                        arr_city,
+                        order_time,
+                        e.arr_time,
+                        vis,
+                        path,
+                        MIN,
+                        OPT,
+                        depth_limit_search_for_big,
+                        depth_limit_among_big,
+                        depth_limit_leave_from_big - 1);
+
+                path.pop_back();
+                vis[target_city] = false;
+            }
+        }
+
+        // go to another big city
+        vis[dep_city] = true;
+        for (auto& kv : G_only_big[dep_city]) {
+            int target_city = kv.first;
+            auto& e = kv.second;
+
+            if (vis[target_city] == false && e.dep_time >= arr_time) {
+                vis[target_city] = true;
+                path.push_back(e);
+                if (val(order_time, path) < MIN) {
+                    opt(big_cities,
+                        G_only_big,
+                        G_others,
+                        target_city,
+                        arr_city,
+                        order_time,
+                        e.arr_time,
+                        vis,
+                        path,
+                        MIN,
+                        OPT,
+                        depth_limit_search_for_big,
+                        depth_limit_among_big - 1,
+                        depth_limit_leave_from_big);
+                }
+
+                path.pop_back();
+                vis[target_city] = false;
+            }
         }
     }
 }
