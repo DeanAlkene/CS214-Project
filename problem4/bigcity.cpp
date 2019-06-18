@@ -65,9 +65,9 @@ main()
                        seller_city,
                        buyer_city,
                        order_time,
+                       1,
                        4,
-                       4,
-                       4);
+                       2);
 
         opt_size << OPT.size() << endl;
         sol_cost << cost_val(OPT) << endl;
@@ -157,7 +157,7 @@ construct_graphs(set<int> big_cities,
               arr_city,
               edge(dep_city, arr_city, dep_time, arr_time, cost, tool_type));
 
-        else
+        else // big city discount
             G_only_big.add_edge(
               dep_city,
               arr_city,
