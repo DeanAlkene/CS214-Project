@@ -10,7 +10,10 @@ set<int>
 get_hubs(MultiDiGraph& G, int hub_num);
 
 void
-construct_out_ways(MultiDiGraph& G, MultiDiGraph& out_ways, set<int>& hubs);
+construct_out_ways(MultiDiGraph& G,
+                   MultiDiGraph& out_ways,
+                   set<int>& hubs,
+                   double discount);
 
 int
 main()
@@ -25,11 +28,14 @@ main()
     int hub_num;
     cout << "Number of hubs: ";
     cin >> hub_num;
+    double discount;
+    cout << "traffic cost discount: ";
+    cin >> discount;
     set<int> hubs = get_hubs(G, hub_num);
 
     // the way out of hub
     MultiDiGraph out_ways(656 + 1);
-    construct_out_ways(G, out_ways, hubs);
+    construct_out_ways(G, out_ways, hubs, discount);
 
     // orders
     csv = ifstream("orders.csv");
@@ -64,7 +70,8 @@ main()
         emergency = atoi(field.c_str());
 
         // deal with an order
-        auto OPT = opt(G, seller_city, buyer_city, order_time, 4, hubs, out_ways);
+        auto OPT =
+          opt(G, seller_city, buyer_city, order_time, 4, hubs, out_ways);
 
         opt_size << OPT.size() << endl;
         sol_cost << cost_val(OPT) << endl;
@@ -83,7 +90,6 @@ main()
     sol_time.close();
     sol_info.close();
 
-
     return 0;
 }
 
@@ -97,12 +103,9 @@ construct_graph(MultiDiGraph& G, ifstream& csv)
         istringstream sin(row);
         string field;
 
-        int tools_index;
         int dep_city, arr_city;
         double dep_time, arr_time, cost;
         int tools_type;
-        getline(sin, field, ',');
-        tools_index = atoi(field.c_str());
         getline(sin, field, ',');
         dep_city = atoi(field.c_str());
         getline(sin, field, ',');
@@ -116,15 +119,10 @@ construct_graph(MultiDiGraph& G, ifstream& csv)
         getline(sin, field, ',');
         tools_type = atoi(field.c_str());
 
-        G.add_edge(dep_city,
-                   arr_city,
-                   edge(tools_index,
-                        dep_city,
-                        arr_city,
-                        dep_time,
-                        arr_time,
-                        cost,
-                        tools_type));
+        G.add_edge(
+          dep_city,
+          arr_city,
+          edge(dep_city, arr_city, dep_time, arr_time, cost, tools_type));
     }
 }
 
@@ -148,7 +146,10 @@ get_hubs(MultiDiGraph& G, int hub_num)
 }
 
 void
-construct_out_ways(MultiDiGraph& G, MultiDiGraph& out_ways, set<int>& hubs)
+construct_out_ways(MultiDiGraph& G,
+                   MultiDiGraph& out_ways,
+                   set<int>& hubs,
+                   double discount)
 {
     for (auto& city : hubs) {
         set<int> reachable;
@@ -167,6 +168,7 @@ construct_out_ways(MultiDiGraph& G, MultiDiGraph& out_ways, set<int>& hubs)
                 }
             }
 
+            out_way.cost *= (1 - discount); // discount
             out_ways.add_edge(city, arr, out_way);
             out_way.dep_time += 1440;
             out_way.arr_time += 1440;

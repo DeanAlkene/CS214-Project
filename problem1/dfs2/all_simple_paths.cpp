@@ -27,12 +27,9 @@ main()
         istringstream sin(row);
         string field;
 
-        int tools_index;
         int dep_city, arr_city;
         double dep_time, arr_time, cost;
         int tools_type;
-        getline(sin, field, ',');
-        tools_index = atoi(field.c_str());
         getline(sin, field, ',');
         dep_city = atoi(field.c_str());
         getline(sin, field, ',');
@@ -46,15 +43,10 @@ main()
         getline(sin, field, ',');
         tools_type = atoi(field.c_str());
 
-        G.add_edge(dep_city,
-                   arr_city,
-                   edge(tools_index,
-                        dep_city,
-                        arr_city,
-                        dep_time,
-                        arr_time,
-                        cost,
-                        tools_type));
+        G.add_edge(
+          dep_city,
+          arr_city,
+          edge(dep_city, arr_city, dep_time, arr_time, cost, tools_type));
     }
     csv.close();
 

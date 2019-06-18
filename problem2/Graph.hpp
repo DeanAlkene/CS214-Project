@@ -6,20 +6,12 @@ using namespace std;
 
 struct edge
 {
-    int index;
     int dep_city, arr_city;
     double dep_time, arr_time, cost;
     int type;
     edge() {}
-    edge(int id,
-         int depc,
-         int arrc,
-         double dept,
-         double arrt,
-         double co,
-         int ty)
-      : index(id)
-      , dep_city(depc)
+    edge(int depc, int arrc, double dept, double arrt, double co, int ty)
+      : dep_city(depc)
       , arr_city(arrc)
       , dep_time(dept)
       , arr_time(arrt)
@@ -39,7 +31,6 @@ struct edge
         if (*this == e) {
             return *this;
         }
-        index = e.index;
         dep_city = e.dep_city;
         arr_city = e.arr_city;
         dep_time = e.dep_time;
@@ -52,7 +43,7 @@ struct edge
     friend ostream& operator<<(ostream& os, const edge& e)
     {
         os << e.dep_city << "\t\t" << e.dep_time << " " << e.arr_time << " "
-           << e.index << " " << e.type << "\t\t" << e.arr_city;
+           << e.type << "\t\t" << e.arr_city;
         return os;
     }
 };
