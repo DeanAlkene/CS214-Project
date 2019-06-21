@@ -97,7 +97,19 @@ So we defined a non-linear object function, and constructed such network model.
 \subsection{Algorithm Design}
 \subsection{Theoretical Analysis}
 \subsubsection{Complexity Analysis}
-We implemented a modified DFS algorithm to search for optimal solutions for each order. 
+We implemented a depth-limited DFS algorithm which technically called \textbf{iterative deepening depth-first search(IDDFS)} to search for optimal solutions. 
+The time complexity is $O(b^d)$, where $b$ is the branching factor and $d$ is the depth limit.
+With a depth limit, the nodes at depth $d$ are expanded once, the nodes at depth $d-1$ are expanded twice. So the total number of expansions in an IDDFS is
+$$b^d + 2b^{d-1} + 3b^{d-2} + ... + (d-1)b^2 + db + (d+1) = \Sigma_{i=0}^{d} (d + 1 - i)b^i$$
+where $b^d$ is the number of expansions at depth $d$, $2b^{d-1}$ is the number of expansions at depth $d-1$, and so on. Factoring out $b^d$ gives
+$$b^d(1 + 2b^{-1} + 3 b^{-2} + ... + (d + 1)^{-d})$$
+Now let $x = \frac{1}{b}$, then we have 
+$$b^d(1 + 2x + 3x^2 + ... )$$ which converge to 
+$$b^d(1 - x)^{-2}$$, for $abs(x) < 1$
+Since $(1-x)^{-2}$ is a constant independent of $d$(the depth), if $b > 1$ (i.e., if the branching factor is greater than 1)\\
+The time complexity is $O(b^d)$.
+Besides, as we also use the strategy of \textbf{branch-cutting-off}, when the total value of the current path IDDFS has found is larger than the current optimal, IDDFS would not carry on searching more cities at this branch.\\
+Therefore, the branching factor $b$ would be divided by $2$ because every time we want to carry on searching at one city, half of the out ways would be strictly \textbf{impossible to be optimal} in expectation. As a result, the factor $b$ would be divided by $2$ to be $O((\frac{b}{2})^d)$, which will highly reduce  the time complexity. 
 \subsubsection{Efficiency Analysis}
 The problem is an NP problem. We can find such a certifier that given a delivery scheme we can verify the correctness order-by-order. The procedure will take polynomial time and thus the problem is NP.
 \subsection{Performance Evaluation}
@@ -127,7 +139,7 @@ We consider it's an $NPO$ problem as well.
 \begin{itemize}
   \item $I$: The network model $G=(V,E)$, the set of $order$, the set of hubs $H$
   \item $sol$: A set of paths $P$ representing the delivery scheme
-  \item $m$: $m(G,order,H,\hat{C},discount)=\sum_{p \in P}C(p)$
+  \item $m$: $m(G,order,H,\hat{C},discount)=\sum_{p \in P}C(p)$.
   \item $goal$: $min$
 \end{itemize}
 \subsection{Algorithm Design}
@@ -141,12 +153,34 @@ Then, we designed the algorithm to find a new delivery scheme.
 
 \section{Problem 3}
 \subsection{Problem Analysis}
+In real case, some other constraints should be considered: the hubs may be capacitated; some hubs may not accept some specific packages; some packages
+may not be transferred by some transportation tools. We listed our constraints for transportations as follows
+\begin{table}
+  \caption{Constraints on Transportations}\label{cts1}
+  \centering
+  \begin{tabular}{|l|l|}
+  \hline
+  Tool &  Constraint \\
+  \hline
+  Trunk & None\\
+  \hline
+  Train & None\\
+  \hline
+  Plane & Inflammable Products, Liquid \\
+  \hline
+  Ship & Food \\
+  \hline
+  \end{tabular}
+\end{table}
+As for constraints on hubs, we randomly set some constraints on hubs.
 \subsection{Algorithm Design}
 \subsection{Theoretical Analysis}
 \subsection{Performance Evaluation}
 
 \section{Problem 4}
 \subsection{Problem Analysis}
+In this problem, we suppose that the SF Express does not have substations in all cities, but only in big cities. Here we suppose that the big cities are those supporting airline service. 
+This means that the SF Express should first take the packages from sellers to some substations, and when delivering the packages to purchasers, some substations should receive the packages first, and then send them to the city that the purchasers are in.
 \subsection{Algorithm Design}
 \subsection{Theoretical Analysis}
 \subsection{Performance Evaluation}
