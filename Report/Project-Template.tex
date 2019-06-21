@@ -51,7 +51,7 @@ Hongzhou Liu (517030910214, deanlhz@sjtu.edu.cn)
 \begin{abstract}\vspace{-5mm}
 Package delivery is such a significant problem nowadays. The convenience and speediness of online shopping highly rely on an efficient and well-organized delivery network.
 Meanwhile, the delivery companies always want to reduce the cost of transportation while winning high rates from customers. The problem can be modelled as min-cost commodity flows over time.
-The characteristics of such kind of problem are networks with capacities and transit times. We also have other properies like the priority of orders of commodities, the ordering time and transportation restictions 
+The characteristics of such kind of problem are networks with capacities and transit times. We also have other properties like the priority of orders of commodities, the ordering time and transportation restrictions 
 with respect to special kinds of commodities. However, such kind of problems is really hard to solve. Though static $s$-$t$ flow problem can be solved in polynomial time, the problem we encountered is almost NP-Hard with enormous input size.
 Thus, we came up with some approximations to get good feasible solutions, applied these algorithms in different scenes and compared their performance.
 
@@ -61,7 +61,7 @@ Thus, we came up with some approximations to get good feasible solutions, applie
 \section{Symbol Table}
 Define all the symbols that will be used later.
 \begin{table}
-\caption{Symbol Table}\label{sym}
+\caption{Symbol Table}\label{sym1}
 \centering
 \begin{tabular}{|l|l|}
 \hline
@@ -81,20 +81,62 @@ $order$ & $seller\_city$, $purchaser\_city$, $order\_time$, $commodity\_index$, 
 \section{Problem 1}
 \subsection{Problem Analysis}
 In this part SF Express has its substations on all 656 cities covered in the orders. We came up with a network model. Regard $city$ as vertex and $tool$ as edge, 
-we can construct a network and simulate the transportation of orders on it. Our cost function is defined as $$C(P)=transport\_time^{rate}  \times transport\_cost$$
-Here $P$ is the path that a particular order takes. And we evaluate the path using our cost function by the time the order takes from the time it was made to the time the 
-package was sent to the comsumer. We add an exponential $rate$ to represent the weight of time in the cost function.
+we can construct a network and simulate the transportation of orders on it. Our cost function is defined as $$C(p)=transport\_time^{rate}  \times transport\_cost$$
+Here $p$ is the path that a particular order takes. And we evaluate the path using our cost function by the time the order takes from the time it was made to the time the 
+package was sent to the consumer. We add an exponential $rate$ to represent the weight of time in the cost function. \\
+The problem is an $NPO$ problem, we give the formal definition as follows:
+\begin{itemize}
+  \item $I$: The network model $G=(V,E)$ and the set of $order$
+  \item $sol$: A set of paths $P$ representing the delivery scheme
+  \item $m$: $m(G,order)=\sum_{p \in P}C(p)$
+  \item $goal$: $min$
+\end{itemize}
+We consider that the problem is not a $LP$ or $ILP$ problem. Because the $transport\_time$ here is not linear. For example, there exist some orders that cannot be sent in the same day it was ordered. 
+They will be delayed for several days thus the $transport\_time$ of a certain order will be a piecewise function.
+So we defined a non-linear object function, and constructed such network model.
 \subsection{Algorithm Design}
 \subsection{Theoretical Analysis}
-\begin{itemize}
-  \item 
-\end{itemize}
+\subsubsection{Complexity Analysis}
+We implemented a modified DFS algorithm to search for optimal solutions for each order. 
+\subsubsection{Efficiency Analysis}
+The problem is an NP problem. We can find such a certifier that given a delivery scheme we can verify the correctness order-by-order. The procedure will take polynomial time and thus the problem is NP.
 \subsection{Performance Evaluation}
 
 \section{Problem 2}
 \subsection{Problem Analysis}
+In this section, we set some hubs in some cities. Hubs can gather packages and send them together to the same city with lower unit cost. However, the packages gathered together at a hub to one
+destination can only be sent by one transportation tool. We defined some new symbols \\
+\begin{table}
+  \caption{Problem 2 Symbols}\label{sym2}
+  \centering
+  \begin{tabular}{|l|l|}
+  \hline
+  Symbol &  Definition \\
+  \hline
+  $\hat{C}$ & The cost of setting a hub, a constant\\
+  \hline
+  $discount$ & The discount rate on the cost when packages are sent from the same hub, $discount\in (0,1)$\\
+  \hline
+  $\#hub$ & The number of hubs \\
+  \hline
+  $H$ & The set of cities where hubs are set \\
+  \hline
+  \end{tabular}
+\end{table}
+We consider it's an $NPO$ problem as well.
+\begin{itemize}
+  \item $I$: The network model $G=(V,E)$, the set of $order$, the set of hubs $H$
+  \item $sol$: A set of paths $P$ representing the delivery scheme
+  \item $m$: $m(G,order,H,\hat{C},discount)=\sum_{p \in P}C(p)$
+  \item $goal$: $min$
+\end{itemize}
 \subsection{Algorithm Design}
+First, we designed the algorithm to choose suitable cities to set hubs.
+Then, we designed the algorithm to find a new delivery scheme.
 \subsection{Theoretical Analysis}
+\subsubsection{Complexity Analysis}
+
+\subsubsection{Efficiency Analysis}
 \subsection{Performance Evaluation}
 
 \section{Problem 3}
