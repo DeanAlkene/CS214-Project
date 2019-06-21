@@ -81,9 +81,14 @@ $order$ & $seller\_city$, $purchaser\_city$, $order\_time$, $commodity\_index$, 
 \section{Problem 1}
 \subsection{Problem Analysis}
 In this part SF Express has its substations on all 656 cities covered in the orders. We came up with a network model. Regard $city$ as vertex and $tool$ as edge, 
-we can construct a network and simulate the transportation of orders on it. Our cost function is defined as $$cost$$
+we can construct a network and simulate the transportation of orders on it. Our cost function is defined as $$C(P)=transport\_time^{rate}  \times transport\_cost$$
+Here $P$ is the path that a particular order takes. And we evaluate the path using our cost function by the time the order takes from the time it was made to the time the 
+package was sent to the comsumer. We add an exponential $rate$ to represent the weight of time in the cost function.
 \subsection{Algorithm Design}
 \subsection{Theoretical Analysis}
+\begin{itemize}
+  \item 
+\end{itemize}
 \subsection{Performance Evaluation}
 
 \section{Problem 2}
