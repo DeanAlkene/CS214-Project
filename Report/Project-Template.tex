@@ -58,6 +58,7 @@ Thus, we came up with some approximations to get good feasible solutions, applie
 \textbf{Keywords:} Package Delivery, Network Flow, Routing, Flow over time.
 \end{abstract}
 
+\setcounter{section}{-1}
 \section{Symbol Table}
 Define all the symbols that will be used later.
 \begin{table}
@@ -69,9 +70,9 @@ Symbol &  Attribute \\
 \hline
 $city$ & $index$, $kind(large/small/hub)$, $capacity$\\
 \hline
-$tool$ & $departure\_city$, $arrival\_city$, $time$, $average\_delay$, $departure\_time$, $unit\_cost$ \\
+$tool$ & $departure\_city$, $arrival\_city$, $time$, $average\_delay$, $departure\_time$, $unit\_cost$, $type$ \\
 \hline
-$commodity$ & $index$, $unit\_weight$ \\
+$commodity$ & $index$, $unit\_weight$, $type$ \\
 \hline
 $order$ & $seller\_city$, $purchaser\_city$, $order\_time$, $commodity\_index$, $amount$, $emergency$ \\
 \hline
@@ -95,6 +96,42 @@ We consider that the problem is not a $LP$ or $ILP$ problem. Because the $transp
 They will be delayed for several days thus the $transport\_time$ of a certain order will be a piecewise function.
 So we defined a non-linear object function, and constructed such network model.
 \subsection{Algorithm Design}
+\begin{algorithm}
+  \KwIn{$G$, $source\_city$, $target\_city$, $order\_time$, $arrival\_time$
+        , $visited[]$, $path$, $MIN$, $optimal\_path$, $depth\_limit$}
+  \BlankLine
+  \caption{$dfs$}
+  \label{Alg-dfs-with-depth-limit}
+  
+  \If{$source\_city == target\_city$ and $path$'s value $< min$ }{
+    $MIN=$ $path$'s value\;
+    $optimal\_path = path$\;
+    $return$\; 
+  }
+  \If{$depth\_limit ==0$}{
+    $return$\;
+  }
+  \BlankLine 
+  
+  $visited[source\_city] = true$\;
+  \For{each $(city, out\_way)$ adjacent to $source\_city$}{
+    \If{$visited[city]==true$ 
+        and $out\_way.departure\_time \ge arrival\_time$}{
+          $visited[city] = true$\;
+          $path.push\_back(out\_way)$\;
+          \BlankLine
+          // branch-cutting-off\;
+          \If{$path$'s value $< min$}{
+            $dfs(G, city, target\_city, order\_time, out\_way.arrival\_time
+            , visited, path, min, optimal\_path, depth\_limit - 1)$\;
+          }
+          \BlankLine
+          $path.pop\_back()$\;
+          $visited[city] = false$\;
+        }
+  }
+
+\end{algorithm}
 \subsection{Theoretical Analysis}
 \subsubsection{Complexity Analysis}
 We implemented a depth-limited DFS algorithm which technically called \textbf{iterative deepening depth-first search(IDDFS)} to search for optimal solutions. 
@@ -109,7 +146,7 @@ $$b^d(1 - x)^{-2}$$ for $abs(x) < 1$
 Since $(1-x)^{-2}$ is a constant independent of $d$(the depth), if $b > 1$ (i.e., if the branching factor is greater than 1)\\
 The time complexity is $O(b^d)$.
 Besides, as we also use the strategy of \textbf{branch-cutting-off}, when the total value of the current path IDDFS has found is larger than the current optimal, IDDFS would not carry on searching more cities at this branch.\\
-Therefore, the branching factor $b$ would be divided by $2$ because every time we want to carry on searching at one city, half of the out ways would be strictly \textbf{impossible to be optimal} in expectation. As a result, the factor $b$ would be divided by $2$ to be $O((\frac{b}{2})^d)$, which will highly reduce  the time complexity. 
+Therefore, the branching factor $b$ would be divided by $2$ because every time we want to carry on searching at one city, half of the out ways would be strictly \textbf{impossible to be optimal} in expectation. As a result, the factor $b$ would be divided by $2$ to be $O((\frac{b}{2})^d)$, which will significantly reduce  the time complexity. 
 \subsubsection{Efficiency Analysis}
 The problem is an NP problem. We can find such a certifier that given a delivery scheme we can verify the correctness order-by-order. The procedure will take polynomial time and thus the problem is NP.
 \subsection{Performance Evaluation}
@@ -138,7 +175,26 @@ First, we will take a look at the time of transfer for the optimal path of each 
   \centering
   \caption{DFS depth}
 \end{figure}
+In our algorithm, we set a limitation of search depth. Once a certain order can find its optimal path under this limitation, we are sure it's an optimal solution. If not, we will let those 
+orders who will not find it's optimal under the limitation, we will make it wait in some city and find a suboptimal solution.
+As we can see in these three graphs, with the increasing of limitation of depth, some part our pie chart decreased, which means some suboptimal solutions become optimal ones due to the increasing 
+of the searching limitation. But increasing the limitation will bring us heavily computation cost and the worst circumstance will have limitation of 656, which is unaffordable to find all optimal solutions.
+However, we found that the proportion of orders which will take longer path to find their optimal is relatively small, thus we can take smaller depth limitation to make it an approximate algorithm. In the Problem 1-3, we choose the limitation as 4.\par
 
+Second, we will discuss the choice of parameter $rate$ in our object function $C(p)$. We ran some testing programs and drew a graph to show the effect of our cost function on the decision of choosing paths in our algorithm.
+As we can see as long as the increasing of $rate$ the weight of time cost decreased sharply. It means that it will be hard to evaluate the cost if we choose a relatively large $rate$ for it will hide the contribution of time cost.
+So we choose $rate=\dfrac{1}{2}$ in our project to make a fair cost function to evaluate the performance.
+
+In the third part, we analyze the approximation ratio. Notice that in our project we choose the depth of IDDFS as 4. So our approximate algorithm is IDDFS with depth of 4.
+However, it's really hard to compute the approximation ratio mathematically. We would rather compute the approximation ratio by comparing the result of our algorithm. As we 
+mentioned before, the algorithm will surely find the global optimal if we set the depth as 656. It's because there're no negative loops in our network model and the depth of 656 implies that we will search all the 
+possible paths. 
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[height = 7cm]{graph/Rate.jpg}
+  \caption{Rate}
+  \label{fig:rt}
+\end{figure}
 \section{Problem 2}
 \subsection{Problem Analysis}
 In this section, we set some hubs in some cities. Hubs can gather packages and send them together to the same city with lower unit cost. However, the packages gathered together at a hub to one
@@ -170,6 +226,61 @@ We consider it's an $NPO$ problem as well.
 \subsection{Algorithm Design}
 First, we designed the algorithm to choose suitable cities to set hubs.
 Then, we designed the algorithm to find a new delivery scheme.
+\begin{algorithm}
+  \KwIn{$G$, $out\_ways\_of\_hub$, $source\_city$, $target\_city$, $order\_time$, $arrival\_time$
+        , $visited[]$, $path$, $MIN$, $optimal\_path$, $depth\_limit$}
+  \BlankLine
+  \caption{dfs with hubs}
+  \label{Alg-dfs-with-hubs}
+  
+  \If{$source\_city == target\_city$ and $path$'s value $< min$ }{
+    $MIN=$ $path$'s value\;
+    $optimal\_path = path$\;
+    $return$\; 
+  }
+  \If{$depth\_limit ==0$}{
+    $return$\;
+  }
+  \BlankLine 
+  
+  $visited[source\_city] = true$\;
+  \If{$source\_city$ is hub}{
+    \For{each $(city, out\_way)$ adjacent
+         to $source\_city$ in Graph $out\_ways\_of\_hub$}{
+      \If{$visited[city]==true$ 
+          and $out\_way.departure\_time \ge arrival\_time$}{
+            $visited[city] = true$\;
+            $path.push\_back(out\_way)$\;
+            \BlankLine
+            \If{$path$'s value $< min$}{
+              $dfs(G,out\_ways\_of\_hub , city, target\_city, order\_time, out\_way.arrival\_time
+              , visited, path, min, optimal\_path, depth\_limit - 1)$\;
+            }
+            \BlankLine
+            $path.pop\_back()$\;
+            $visited[city] = false$\;
+          }
+    }
+  }
+  \Else{
+    \For{each $(city, out\_way)$ adjacent to $source\_city$ in Graph G}{
+      \If{$visited[city]==true$ 
+          and $out\_way.departure\_time \ge arrival\_time$}{
+            $visited[city] = true$\;
+            $path.push\_back(out\_way)$\;
+            \BlankLine
+            \If{$path$'s value $< min$}{
+              $dfs(G, city, target\_city, order\_time, out\_way.arrival\_time
+              , visited, path, min, optimal\_path, depth\_limit - 1)$\;
+            }
+            \BlankLine
+            $path.pop\_back()$\;
+            $visited[city] = false$\;
+          }
+    }
+  }
+
+\end{algorithm}
 \subsection{Theoretical Analysis}
 \subsubsection{Complexity Analysis}
 
@@ -200,6 +311,42 @@ may not be transferred by some transportation tools. We listed our constraints f
 As for constraints on hubs, we randomly set some constraints on hubs. Here, the problem is still an $NPO$, we just add some new constraints to it.
 And we still cannot convert it to $LP$ or $ILP$.
 \subsection{Algorithm Design}
+\begin{algorithm}
+  \KwIn{$G$, $source\_city$, $target\_city$, $order\_time$, $arrival\_time$
+        , $visited[]$, $path$, $MIN$, $optimal\_path$, $depth\_limit, commodity\_type$}
+  \BlankLine
+  \caption{dfs with constraints}
+  \label{Alg-dfs-with-constraints}
+  
+  \If{$source\_city == target\_city$ and $path$'s value $< min$ }{
+    $MIN=$ $path$'s value\;
+    $optimal\_path = path$\;
+    $return$\; 
+  }
+  \If{$depth\_limit ==0$}{
+    $return$\;
+  }
+  \BlankLine 
+  
+  $visited[source\_city] = true$\;
+  \For{each $(city, out\_way)$ adjacent to $source\_city$}{
+    \If{$visited[city]==true$ 
+        and $out\_way.departure\_time \ge arrival\_time$
+        and $out\_way.type$ can deliver $commodity\_type$}{
+          $visited[city] = true$\;
+          $path.push\_back(out\_way)$\;
+          \BlankLine
+          \If{$path$'s value $< min$}{
+            $dfs(G, city, target\_city, order\_time, out\_way.arrival\_time
+            , visited, path, min, optimal\_path, depth\_limit - 1, commodity\_type)$\;
+          }
+          \BlankLine
+          $path.pop\_back()$\;
+          $visited[city] = false$\;
+        }
+  }
+
+\end{algorithm}
 \subsection{Theoretical Analysis}
 \subsection{Performance Evaluation}
 
@@ -208,6 +355,114 @@ And we still cannot convert it to $LP$ or $ILP$.
 In this problem, we suppose that the SF Express does not have substations in all cities, but only in big cities. Here we suppose that the big cities are those supporting airline service. 
 This means that the SF Express should first take the packages from sellers to some substations, and when delivering the packages to purchasers, some substations should receive the packages first, and then send them to the city that the purchasers are in.
 \subsection{Algorithm Design}
+\begin{algorithm}
+  \KwIn{$G\_among\_big\_cities$, $G\_other\_routes$, $source\_city$, $target\_city$, $order\_time$, $arrival\_time$
+        , $visited[]$, $path$, $MIN$, $optimal\_path$, 
+        $depth\_limit\_search\_for\_big$, $depth\_limit\_among\_big$, $depth\_limit\_leave\_from\_big$}
+  \BlankLine
+  \caption{dfs for deliveries only happen between big cities}
+  \label{Alg-dfs-for-deliveries-only-happen-between-big-cities}
+  
+  \If{$source\_city == target\_city$ and $path$'s value $< min$ }{
+    $MIN=$ $path$'s value\;
+    $optimal\_path = path$\;
+    $return$\; 
+  }
+  \BlankLine 
+  
+  //has not been in big cities (in the stage of searching for big cities)\;
+  \If{source\_city is not big cities}{
+    //search for a big city\;
+    \If{depth\_limit\_search\_for\_big $ne 0$}{
+      $visited[source\_city] = true$\;
+      \For{each $(city, out\_way)$ adjacent to $source\_city$ 
+      in Graph $G\_other\_routes$}{
+        \If{$visited[city]==true$ 
+            and $out\_way.departure\_time \ge arrival\_time$}{
+              $visited[city] = true$\;
+              $path.push\_back(out\_way)$\;
+              \BlankLine
+              \If{$path$'s value $< min$}{
+                dfs($G\_among\_big\_cities$, $G\_other\_routes$, $source\_city$, $target\_city$, $order\_time$, $arrival\_time$
+        , $visited[]$, $path$, $MIN$, $optimal\_path$, 
+        $depth\_limit\_search\_for\_big - 1$, $depth\_limit\_among\_big$, $depth\_limit\_leave\_from\_big$)\;
+              }
+              \BlankLine
+              $path.pop\_back()$\;
+              $visited[city] = false$\;
+            }
+      }
+    }
+  }
+  
+  \BlankLine
+  // has been in big cities\;
+  \Else{
+    \BlankLine
+    // we can go to another big city\;
+    \If{depth\_limit\_among\_big $ne 0$}{
+      $visited[source\_city] = true$\;
+      \For{each $(city, out\_way)$ adjacent to $source\_city$ 
+      in Graph $G\_among\_big\_cities$}{
+        \If{$visited[city]==true$ 
+            and $out\_way.departure\_time \ge arrival\_time$}{
+              $visited[city] = true$\;
+              $path.push\_back(out\_way)$\;
+              \BlankLine
+              \If{$path$'s value $< min$}{
+                dfs($G\_among\_big\_cities$, $G\_other\_routes$, $source\_city$, $target\_city$, $order\_time$, $arrival\_time$
+        , $visited[]$, $path$, $MIN$, $optimal\_path$, 
+        $0$, $depth\_limit\_among\_big - 1$, $depth\_limit\_leave\_from\_big$)\;
+              }
+              \BlankLine
+              $path.pop\_back()$\;
+              $visited[city] = false$\;
+            }
+      }
+    }
+
+    \BlankLine
+    // Also, we can leave from this big city to the destination\;
+    \If{depth\_limit\_leave\_from\_big $ne 0$}{
+      $visited[source\_city] = true$\;
+      \For{each $(city, out\_way)$ adjacent to $source\_city$ 
+      in Graph $G\_other\_routes$}{
+        \If{$visited[city]==true$ 
+            and $out\_way.departure\_time \ge arrival\_time$}{
+              $visited[city] = true$\;
+              $path.push\_back(out\_way)$\;
+              \BlankLine
+              \If{$path$'s value $< min$}{
+                dfs($G\_among\_big\_cities$, $G\_other\_routes$, $source\_city$, $target\_city$, $order\_time$, $arrival\_time$
+        , $visited[]$, $path$, $MIN$, $optimal\_path$, 
+        $0$, $0$, $depth\_limit\_leave\_from\_big - 1$)\;
+              }
+              \BlankLine
+              $path.pop\_back()$\;
+              $visited[city] = false$\;
+            }
+      }
+    }
+  }
+
+  $visited[source\_city] = true$\;
+  \For{each $(city, out\_way)$ adjacent to $source\_city$}{
+    \If{$visited[city]==true$ 
+        and $out\_way.departure\_time \ge arrival\_time$}{
+          $visited[city] = true$\;
+          $path.push\_back(out\_way)$\;
+          \BlankLine
+          \If{$path$'s value $< min$}{
+            $dfs(G, city, target\_city, order\_time, out\_way.arrival\_time
+            , visited, path, min, optimal\_path, depth\_limit - 1)$\;
+          }
+          \BlankLine
+          $path.pop\_back()$\;
+          $visited[city] = false$\;
+        }
+  }
+
+\end{algorithm}
 \subsection{Theoretical Analysis}
 \subsection{Performance Evaluation}
 
