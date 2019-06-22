@@ -37,6 +37,7 @@ main()
     MultiDiGraph out_ways(656 + 1);
     construct_out_ways(G, out_ways, hubs, discount);
 
+
     // orders
     csv = ifstream("orders.csv");
     string row;
